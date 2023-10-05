@@ -8,12 +8,42 @@ class SymbolsList(list):
         "{": "}",
         "[": "]",
     }
+    count_square_close = 0
+    count_curly_close = 0
+    count_square_open = 0
+    count_curly_open = 0
 
     def add_sym(self, sym):
-        if sym in self.CLOSE_MAP:
-            self.insert(0, self.CLOSE_MAP[sym])
-        elif sym in self.CLOSE_MAP.values():
-            self.remove(sym)
+        if sym == "{":
+            if self.count_curly_close > 0:
+                self.remove(self.CLOSE_MAP[sym])
+                self.count_curly_close -= 1
+            else:
+                self.insert(0, self.CLOSE_MAP[sym])
+
+        elif sym == "}":
+            if self.count_curly_open > 0:
+                self.remove(sym)
+                self.count_curly_open -= 1
+            else:
+                self.insert(0, sym)
+                self.count_curly_close += 1
+
+        if sym == "[":
+            if self.count_square_close > 0:
+                self.remove(self.CLOSE_MAP[sym])
+                self.count_square_close -= 1
+            else:
+                self.insert(0, self.CLOSE_MAP[sym])
+
+        elif sym == "]":
+            if self.count_square_open > 0:
+                self.remove(sym)
+                self.count_square_open -= 1
+            else:
+                self.insert(0, sym)
+                self.count_square_close += 1
+
         else:
             # discard symbol
             pass
@@ -30,19 +60,20 @@ def preprocess_json(json_str, to_char):
 
     # Updates to_char, to the next close "}" or "," or "\n"
     to_char = to_char+i_to_go
-    num_close_brackets = json_str[to_char:].count("}")
-    num_open_brackets = json_str[to_char:].count("{")
     json_str_trunc = json_str[:to_char]
+    # DEBUG print(json_str_trunc)
+    # DEBUG print()
     
     reverted_json_str_trunc = json_str_trunc[::-1]
     symbols = SymbolsList()
-    # print(reverted_json_str_trunc)
+    # DEBUG print(reverted_json_str_trunc)
     for ch in reverted_json_str_trunc:
         if ch in SymbolsList.CLOSE_MAP.keys() or ch in SymbolsList.CLOSE_MAP.values():
+            # DEBUG print("MATCH", ch)
             symbols.add_sym(ch)
+            # DEBUG print(symbols[::-1])
 
     json_str_trunc += "".join(symbols[::-1])
-
 
     print(json_str_trunc)
     return json_str_trunc
@@ -82,6 +113,7 @@ def main(argv):
     except IndexError as e:
         print("JSONPath not found")
     else:
+        # print(f"OUTPUT PATH: {x.full_path=}")
         print(f"OUTPUT PATH: {x.full_path}")
 
 
