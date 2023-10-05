@@ -24,6 +24,6 @@ python extract_json_path_to_char.py '*..title' demo.json 1200
 
 ## Results
 
-[!usage1](./usage1.png)
+![usage1](./usage1.png)
 
-[!usage2](./usage2.png)
+![usage2](./usage2.png)
