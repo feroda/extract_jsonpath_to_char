@@ -53,14 +53,27 @@ def preprocess_json(json_str, to_char):
     if not to_char or to_char > len(json_str):
         return json_str
 
-    i_next_close_bracket = json_str[to_char:].find("}")
-    i_next_comma = json_str[to_char:].find(",")
-    i_next_eol = json_str[to_char:].find("\n")
-    i_to_go = min(i_next_close_bracket, i_next_comma, i_next_eol)
+    i_prev_eol = json_str[:to_char].rfind("\n")+1
+    i_next_eol = json_str[to_char:].find("\n")+to_char
+    # DEBUG print(f"{i_next_eol=}")
+
+    # WARNING: avoid to truncate the line at curly brackets or comma index into string values
+    i_next_close_bracket = json_str[:i_next_eol].rfind("}")
+    i_next_comma = json_str[:i_next_eol].rfind(",")
+    # DEBUG print(f"{i_next_close_bracket=} {i_next_comma=}")
+
+    i_to_compare = max(i_next_close_bracket, i_next_comma)
+    # DEBUG print(f"{i_prev_eol=}")
+    i_end_key = json_str[i_prev_eol:i_next_eol].find('"', 2)+i_prev_eol+2  # adds 2 chars ":
+    if max(to_char,i_end_key) < i_to_compare < i_next_eol:
+        i_to_go = i_to_compare
+        # DEBUG print(f"i_to_compare: {i_to_go=} {i_end_key=}")
+    else:
+        i_to_go = i_next_eol
+        # DEBUG print(f"i_next_eol: {i_to_go=} {i_end_key=}")
 
     # Updates to_char, to the next close "}" or "," or "\n"
-    to_char = to_char+i_to_go
-    json_str_trunc = json_str[:to_char]
+    json_str_trunc = json_str[:i_to_go]
     # DEBUG print(json_str_trunc)
     # DEBUG print()
     
